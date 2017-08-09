@@ -15,7 +15,7 @@ namespace GarageBackGround
     {
         private const string TRIGGER_PASSWORD = "aita";
         private const uint BufferSize = 8192;
-        private const string piConnectionString = "HostName=HadaHouseHub.azure-devices.net;DeviceId=hada-pi3;SharedAccessKey=gIJQfuMqugiWVyAqwct8EAMW6pgbRWHzH6LzSzXEBI8=";
+        private const string HadaHubConnectionString = "HostName=HadaHouseHub.azure-devices.net;DeviceId=hada-pi3;SharedAccessKey=gIJQfuMqugiWVyAqwct8EAMW6pgbRWHzH6LzSzXEBI8=";
 
 
         static GarageDoor g;
@@ -87,11 +87,15 @@ namespace GarageBackGround
 
             // Azure IoT Hub
             await ReceiveDataFromAzure();
+
+            // Night time policy
+
+            // if open after 10 pm, sent alert
         }
 
         public async static Task SendMessageToAzure(string message)
         {
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(piConnectionString, TransportType.Http1);
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(HadaHubConnectionString, TransportType.Http1);
 
             var msg = new Message(Encoding.UTF8.GetBytes(message));
 
@@ -100,7 +104,7 @@ namespace GarageBackGround
 
         public async static Task ReceiveDataFromAzure()
         {
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(piConnectionString, TransportType.Http1);
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(HadaHubConnectionString, TransportType.Http1);
 
             Message receivedMessage;
             string messageData;
