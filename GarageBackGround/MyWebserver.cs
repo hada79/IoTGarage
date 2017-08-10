@@ -1,13 +1,8 @@
 ﻿using Microsoft.Azure.Devices.Client;
+using Microsoft.Devices.Tpm;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.Networking.Sockets;
-using Windows.Storage.Streams;
 
 namespace GarageBackGround
 {
@@ -15,14 +10,11 @@ namespace GarageBackGround
     {
         private const string TRIGGER_PASSWORD = "aita";
         private const uint BufferSize = 8192;
-        private const string HadaHubConnectionString = "HostName=HadaHouseHub.azure-devices.net;DeviceId=hada-pi3;SharedAccessKey=gIJQfuMqugiWVyAqwct8EAMW6pgbRWHzH6LzSzXEBI8=";
-
 
         static GarageDoor g;
 
         public async void Start()
         {
-
             g = new GarageDoor();
             // WEB SERVER
             //var listener = new StreamSocketListener();
@@ -95,7 +87,15 @@ namespace GarageBackGround
 
         public async static Task SendMessageToAzure(string message)
         {
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(HadaHubConnectionString, TransportType.Http1);
+            TpmDevice myDevice = new TpmDevice(0); // Use logical device 0 on the TPM
+            string hubUri = myDevice.GetHostName();
+            string deviceId = myDevice.GetDeviceId();
+            string sasToken = myDevice.GetSASToken();
+
+            var deviceClient = DeviceClient.Create(
+                hubUri,
+                AuthenticationMethodFactory.
+                    CreateAuthenticationWithToken(deviceId, sasToken), TransportType.Amqp);
 
             var msg = new Message(Encoding.UTF8.GetBytes(message));
 
@@ -104,7 +104,15 @@ namespace GarageBackGround
 
         public async static Task ReceiveDataFromAzure()
         {
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(HadaHubConnectionString, TransportType.Http1);
+            TpmDevice myDevice = new TpmDevice(0); // Use logical device 0 on the TPM
+            string hubUri = myDevice.GetHostName();
+            string deviceId = myDevice.GetDeviceId();
+            string sasToken = myDevice.GetSASToken();
+
+            var deviceClient = DeviceClient.Create(
+                hubUri,
+                AuthenticationMethodFactory.
+                    CreateAuthenticationWithToken(deviceId, sasToken), TransportType.Amqp);
 
             Message receivedMessage;
             string messageData;
@@ -139,17 +147,17 @@ namespace GarageBackGround
 
             await SendMessageToAzure(returnMessage);
         }
+        // Used for WebServer
+        //private static string GetQuery(StringBuilder request)
+        //{
+        //    var requestLines = request.ToString().Split(' ');
 
-        private static string GetQuery(StringBuilder request)
-        {
-            var requestLines = request.ToString().Split(' ');
+        //    var url = requestLines.Length > 1
+        //                      ? requestLines[1] : string.Empty;
 
-            var url = requestLines.Length > 1
-                              ? requestLines[1] : string.Empty;
-
-            var uri = new Uri("http://localhost" + url);
-            var query = uri.Query;
-            return query;
-        }
+        //    var uri = new Uri("http://localhost" + url);
+        //    var query = uri.Query;
+        //    return query;
+        //}
     }
 }
