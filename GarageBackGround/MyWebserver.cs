@@ -1,6 +1,8 @@
 ﻿using Microsoft.Azure.Devices.Client;
 using Microsoft.Devices.Tpm;
+using ppatierno.AzureSBLite.Messaging;
 using System;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,7 +16,9 @@ namespace GarageBackGround
         static GarageDoor g;
 
         public async void Start()
-        {
+        {          
+
+
             g = new GarageDoor();
             // WEB SERVER
             //var listener = new StreamSocketListener();
@@ -95,7 +99,7 @@ namespace GarageBackGround
             var deviceClient = DeviceClient.Create(
                 hubUri,
                 AuthenticationMethodFactory.
-                    CreateAuthenticationWithToken(deviceId, sasToken), TransportType.Amqp);
+                    CreateAuthenticationWithToken(deviceId, sasToken), Microsoft.Azure.Devices.Client.TransportType.Amqp);
 
             var msg = new Message(Encoding.UTF8.GetBytes(message));
 
@@ -112,7 +116,7 @@ namespace GarageBackGround
             var deviceClient = DeviceClient.Create(
                 hubUri,
                 AuthenticationMethodFactory.
-                    CreateAuthenticationWithToken(deviceId, sasToken), TransportType.Amqp);
+                    CreateAuthenticationWithToken(deviceId, sasToken), Microsoft.Azure.Devices.Client.TransportType.Amqp);
 
             Message receivedMessage;
             string messageData;
